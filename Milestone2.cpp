@@ -30,6 +30,10 @@ using namespace std;
     // Structure to hold IQ data
     std::vector<std::pair<int, int> > iqData;
 
+    // variables for calculations
+    int slots , No_of_Frames , No_of_Subframes , No_of_Slots , No_of_Symb , PacketsPerSymbol , No_of_packets , No_of_bits ,No_of_ifgs ;
+    int Frame_duration = 10 ; // 10 ms
+
 // Function to read the setup file
 bool readSetupFile(const std::string& setupFilePath)
 {
@@ -383,19 +387,8 @@ void increment_ECPRISeqid()
 
 }
 
-int main()
+void Calculations()
 {
-    //  Load setup file and iq file
-    std::string setupFilePath = "/Users/zeina/Desktop/Project/SetupFile.txt";
-    if (!readSetupFile(setupFilePath))
-    {
-        return 1;
-    }
-
-    std::string iqFilePath = "/Users/zeina/Desktop/Project/iq_file.txt";
-
-    std::cout << "Setup file parameters loaded successfully." << std::endl;
-
     // Calculations for frames , subframes , ... etc calculations
         int Mu;
         switch (oran_scs)
@@ -411,39 +404,37 @@ int main()
             break;
            default:
             std::cerr << "Invalid ORAN SCS value: " << oran_scs << std::endl;
-            return 1;  // Handle invalid SCS values
          }
 
-        int slots = pow(2,Mu);
+        slots = pow(2,Mu);
         cout<<"Number of slots per subframe are "<<slots<<endl;
 
         // step (1): Calculate the total number of frames
-        int Frame_duration = 10 ; // 10 ms
-        int No_of_Frames = CaptureSizeMs / Frame_duration ;
+        No_of_Frames = CaptureSizeMs / Frame_duration ;
         cout<<"Number of Frames are "<<No_of_Frames<<endl;
 
         // step (2): Calculate the total number of subframes
-        int No_of_Subframes = No_of_Frames * 10 ; // 1 frame >> 10 subframe
+        No_of_Subframes = No_of_Frames * 10 ; // 1 frame >> 10 subframe
         cout<<"Number of Subframes are "<<No_of_Subframes<<endl;
 
         // step (3): Calculate the total number of slots
-        int No_of_Slots = No_of_Subframes * slots ;
+        No_of_Slots = No_of_Subframes * slots ;
         cout<<"Number of total slots are "<<No_of_Slots<<endl;
 
         // step (4): Calculate the total number of symbols
-        int No_of_Symb = No_of_Slots * 14 ; // Assuming Normal CP
+        No_of_Symb = No_of_Slots * 14 ; // Assuming Normal CP
         cout<<"Number of total Symbols are "<<No_of_Symb<<endl;
 
         // step (5): Calculate the number of packets per symbol
-        int PacketsPerSymbol =  ceil(oran_Maxprb / oran_nrbPerPacket) ;
+        PacketsPerSymbol =  ceil(oran_Maxprb / oran_nrbPerPacket) ;
         cout<<"Number of Packets per Symbol are "<<PacketsPerSymbol<<endl;
 
         // step (6): Calculate the total number of ORAN packets
-        int No_of_packets  = PacketsPerSymbol * No_of_Symb;
+        No_of_packets  = PacketsPerSymbol * No_of_Symb;
         cout<<"Number of total ORAN Packets are "<<No_of_packets<<endl;
 
         // step (7): Calculate the number of bits per packet
-        int No_of_bits = oran_nrbPerPacket *12 * 2* 16;  // 1 RB >> 12 IQ sample assuming IQ bitwidth = 16 (16 for i and 16 for q)
+        No_of_bits = oran_nrbPerPacket *12 * 2* 16;  // 1 RB >> 12 IQ sample assuming IQ bitwidth = 16 (16 for i and 16 for q)
         cout<<"Number of bits per ORAN packet are "<<No_of_bits<<endl;
 
         double No_of_bytes =  No_of_bits / 8 ;
@@ -459,8 +450,25 @@ int main()
         cout<<"Remaining time is "<<Remaining_time<<endl;
 
         // step (11):
-        int No_of_ifgs = Remaining_time / (((MinNumOfIFGsPerPacket*1) * 8) / (LineRate * pow(10.0,9.0)));
+        No_of_ifgs = Remaining_time / (((MinNumOfIFGsPerPacket*1) * 8) / (LineRate * pow(10.0,9.0)));
         cout<<"Number of IFGs generated in the remaining time of the frame is "<<No_of_ifgs<<endl;
+}
+
+int main()
+{
+    //  Load setup file and iq file
+    std::string setupFilePath = "/Users/zeina/Desktop/Project/SetupFile.txt";
+    if (!readSetupFile(setupFilePath))
+    {
+        return 1;
+    }
+
+    std::string iqFilePath = "/Users/zeina/Desktop/Project/iq_file.txt";
+
+    std::cout << "Setup file parameters loaded successfully." << std::endl;
+
+    // Calculations for frames , subframes , ... etc calculations
+    Calculations();
 
     std::vector<uint8_t> oranPayload = generateOranPayloadWithLooping(iqFilePath);
     if (oranPayload.empty())
