@@ -1,0 +1,14 @@
+Eth.LineRate=10
+Eth.CaptureSizeMs=20
+Eth.MinNumOfIFGsPerPacket=1
+Eth.DestAddress=0x010101010101
+Eth.SourceAddress=0x333333333333
+Eth.MaxPacketSize=1500
+Eth.BurstSize=100
+Eth.BurstPeriodicity_us=1000
+ECPRI.SeqId=0
+ORAN.SCS=30
+ORAN.MaxNRB=273
+ORAN.NRBperpacket=46
+ORAN.PayloadType=fixed
+ORAN.Payload=iq_file.txt
